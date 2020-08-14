@@ -93,7 +93,6 @@ RUN set -ex \
 ## Git and sudo (sudo needed for user override)
 RUN apt-get update && apt-get -y install git sudo
 
-#LSPs
 
 ##GO
 ENV GO_VERSION=1.15 \
@@ -185,75 +184,6 @@ RUN apt-get update \
     && pip install python-language-server flake8 autopep8
 
 
-#.NET Core SDK
-ARG DOTNET_VERSION=3.1
-
-RUN curl -SLO "https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb" \
-    && dpkg -i packages-microsoft-prod.deb \
-    && rm packages-microsoft-prod.deb \
-    && apt-get update \
-    && apt-get install -y dotnet-sdk-$DOTNET_VERSION
-
-
-#PHP
-ARG PHP_VERSION=7.4
-
-RUN apt-get update \
-    && apt-get install -y software-properties-common \
-    && add-apt-repository -y ppa:ondrej/php \
-    && apt-get install -y curl php$PHP_VERSION php$PHP_VERSION-cli php$PHP_VERSION-mbstring unzip php$PHP_VERSION-common php$PHP_VERSION-json php-yaml php-xdebug \
-    && apt-get remove -y software-properties-common
-RUN echo '[XDebug]\n\
-xdebug.remote_enable = 1\n\
-xdebug.remote_autostart = 1' >> /etc/php/$PHP_VERSION/mods-available/xdebug.ini
-RUN curl -s -o composer-setup.php https://getcomposer.org/installer \
-    && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
-    && rm composer-setup.php
-
-
-#Ruby
-RUN apt-get update && apt-get -y install ruby ruby-dev zlib1g-dev && \
-    gem install solargraph
-
-
-#Swift
-ARG SWIFT_VERSION=5.2.4
-
-RUN apt-get update \
-    && apt-get install -y binutils libc6-dev libcurl4 libedit2 libgcc-5-dev libpython2.7 libsqlite3-0 libstdc++-5-dev libxml2 pkg-config tzdata zlib1g-dev \
-    && curl -SLO https://swift.org/builds/swift-$SWIFT_VERSION-release/ubuntu1804/swift-$SWIFT_VERSION-RELEASE/swift-$SWIFT_VERSION-RELEASE-ubuntu18.04.tar.gz \
-    && curl -SLO https://swift.org/builds/swift-$SWIFT_VERSION-release/ubuntu1804/swift-$SWIFT_VERSION-RELEASE/swift-$SWIFT_VERSION-RELEASE-ubuntu18.04.tar.gz.sig \
-    && wget -q -O - https://swift.org/keys/all-keys.asc | gpg --import - \
-    && (    gpg --keyserver pool.sks-keyservers.net --refresh-keys Swift \
-         || gpg --keyserver ipv4.pool.sks-keyservers.net --refresh-keys Swift \
-         || gpg --keyserver pool.sks-keyservers.net --refresh-keys Swift \
-         || gpg --keyserver pgp.mit.edu --refresh-keys Swift \
-         || gpg --keyserver keyserver.pgp.com --refresh-keys Swift \
-         || gpg --keyserver ha.pool.sks-keyservers.net --refresh-keys Swift \
-       ) \
-    && gpg --verify swift-$SWIFT_VERSION-RELEASE-ubuntu18.04.tar.gz.sig \
-    && tar fxz swift-$SWIFT_VERSION-RELEASE-ubuntu18.04.tar.gz \
-    && rm swift-$SWIFT_VERSION-RELEASE-ubuntu18.04.tar.gz swift-$SWIFT_VERSION-RELEASE-ubuntu18.04.tar.gz.sig \
-    && mv swift-$SWIFT_VERSION-RELEASE-ubuntu18.04 /usr/local/swift \
-    && ln -s /usr/local/swift/usr/bin/swift* /usr/bin \
-    && ln -s /usr/local/swift/usr/bin/lldb* /usr/bin \
-    && ln -s /usr/local/swift/usr/bin/sourcekit-lsp /usr/bin
-
-
-#Dart
-ENV DART_VERSION 2.9.0
-
-RUN \
-  apt-get update && apt-get install --no-install-recommends -y -q gnupg2 curl git ca-certificates apt-transport-https openssh-client && \
-  curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
-  curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list && \
-  curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_testing.list > /etc/apt/sources.list.d/dart_testing.list && \
-  curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_unstable.list > /etc/apt/sources.list.d/dart_unstable.list && \
-  apt-get update && \
-  apt-get install dart=$DART_VERSION-1
-
-ENV DART_SDK /usr/lib/dart
-ENV PATH $DART_SDK/bin:/theia/.pub-cache/bin:$PATH
 
 
 ## User account
